@@ -7,7 +7,7 @@ var margin = {
   top: 60,
   right: 60,
   bottom: 120,
-  left: 130
+  left: 150
 };
 
 // Define dimensions of the chart area
@@ -360,7 +360,7 @@ function init() {
 
     // Create group for yLabels: y-axis labels
     var yLabels = chartGroup.append("g")
-        .attr("transform", `rotate(-90 ${(margin.left/2)} ${(chartHeight/2)+30})`)
+        .attr("transform", `rotate(-90 ${(margin.left/2)} ${(chartHeight/2)+60})`)
         .classed("atext", true)
         .attr("id", "yLabels");
     // Create rect for y-axis move label
