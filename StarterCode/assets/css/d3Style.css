@@ -4,6 +4,10 @@
   text-anchor: middle;
 }
 
+.invisible {
+  visibility: hidden;
+}
+
 /* class for circle+text group */
 .active {
   font-weight: bold;
@@ -36,11 +40,16 @@
   stroke: #e3e3e3;
 }
 
+.stateRect {
+  fill: #89bdd3;
+}
+
 .chart {
   display: block;
   margin: 0;
 }
 
+/* Tooltip */
 .d3-tip {
   padding: 6px;
   font-size: 12px;
