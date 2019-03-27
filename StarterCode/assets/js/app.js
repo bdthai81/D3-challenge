@@ -125,19 +125,14 @@ function updateChart() {
 
         // update new chosenAxis
         chosenAxis = (xy === "x") ? chosenXAxis:chosenYAxis;
-        
         // updates xy scale for new data
         linearScale = scale(acsData, chosenAxis, xy);
-
         // updates chosen axis with transition
         axis = renderAxis(linearScale, axis, xy);
-
         // updates circles with new chosen axis values
         elemEnter = renderCircles(elemEnter, linearScale, chosenAxis, xy);
-
         // updates tooltips with new info
         elemEnter = updateToolTip(chosenXAxis, chosenYAxis, elemEnter);
-
         // Parse through the chosen Axis Labels and reset the active/inactive + visibility
         axisLabels = (xy === "x") ? xAxisLabels:yAxisLabels
         axisLabels.forEach(label => {
@@ -163,20 +158,65 @@ function updateChart() {
 function updateLabelsTooltip(xy, labelEnter) {
     // reverse xy for move to opposite axis
     xy = (xy === "x") ? "y":"x";
-
+    // add tooltip to the rect tag
     var tool_tip = d3.tip()
         .attr("class", "d3-tip")
         .offset([-10, 0])
         .html(d => `Move ${d} to ${xy}-axis`);
     
     svg.call(tool_tip);
-
+    // add the event handlers
     labelEnter.classed("active inactive", true)
     .on('mouseenter', tool_tip.show)
     .on('mouseleave', tool_tip.hide)
     .on('mousedown', tool_tip.hide);
 
     return labelEnter;
+}
+
+// function updates the rect tag into axis label group
+function updateLabelsRect(xy, xPos, labelsRect) {
+    // Set the size of the square (rect)
+    var squareSize = 12;
+    // Define chosenAxis by xy
+    var chosenAxis = (xy === "x") ? chosenXAxis : chosenYAxis;
+    // Add rect tag
+    var enterlabelsRect = null;
+    // Append rect tag
+    enterlabelsRect = labelsRect.enter()
+        .append("rect")
+        .merge(labelsRect)
+        .attr("x", xPos)
+        .attr("y", (d,i) => (i+1)*axisPadding-squareSize)
+        .attr("width", squareSize)
+        .attr("height", squareSize)
+        .classed("stateRect", true)
+        .classed("invisible", d => (d === chosenAxis) ? true:false)
+        .attr("value", d => xy+d)
+        .on("click", updateLabel);;
+
+    // Return enter to be able to append tooltip
+    return enterlabelsRect;
+}
+
+// function updates the text tag into axis label group
+function updateLabelsText(xy, xPos, labelsText) {
+    // Define chosenAxis by xy
+    var chosenAxis = (xy === "x") ? chosenXAxis : chosenYAxis;
+    // Add text tag
+    var enterlabelsText = null; labelsText.enter()
+                                    .append("text");
+    // Append text tag
+    enterlabelsText = labelsText.enter()
+        .append("text")
+        .merge(labelsText)
+        .attr("x", xPos)
+        .attr("y", (d,i) => (i+1)*axisPadding)
+        .attr("value", d => d) // value to grab for event listener
+        .classed("active", d => (d === chosenAxis) ? true:false)
+        .classed("inactive", d => (d === chosenAxis) ? false:true)
+        .text(d => labelsTitle[d])
+        .on("click", updateChart);
 }
 
 // function updates the axis labels after moving one of the axes
@@ -202,76 +242,38 @@ function updateLabel() {
 
     // Update group for x axis labels group of rect + text
     var xLabels = d3.select("#xLabels");
-
     // append the rect for move labels
     var xLabelsRect = xLabels.selectAll("rect")
         .data(xAxisLabels);
-
-    var enterXLabelsRect = xLabelsRect.enter()
-        .append("rect")
-        .merge(xLabelsRect)
-        .attr("x", -120)
-        .attr("y", (d,i) => (i+1)*axisPadding-12)
-        .attr("width", 12)
-        .attr("height", 12)
-        .classed("stateRect", true)
-        .classed("invisible", d => (d === chosenXAxis) ? true:false)
-        .attr("value", d => "x"+d)
-        .on("click", updateLabel);
+    // update labels rect tags
+    xEnterLabelsRect = updateLabelsRect("x", -120, xLabelsRect);
     // update tooptip on rect
-    updateLabelsTooltip("x", enterXLabelsRect);
+    updateLabelsTooltip("x", xEnterLabelsRect);
     // Remove old labels rect
     xLabelsRect.exit().remove();
     // append the text for the x-axis labels
     var xLabelsText = xLabels.selectAll("text")
         .data(xAxisLabels);
-    xLabelsText.enter()
-        .append("text")
-        .merge(xLabelsText)
-        .attr("x", 0)
-        .attr("y", (d,i) => (i+1)*axisPadding)
-        .attr("value", d => d) // value to grab for event listener
-        .classed("active", d => (d === chosenXAxis) ? true:false)
-        .classed("inactive", d => (d === chosenXAxis) ? false:true)
-        .text(d => labelsTitle[d])
-        .on("click", updateChart);
+    // update labels text
+    updateLabelsText("x", 0, xLabelsText);
     // Remove any excess old data
     xLabelsText.exit().remove();
-
     // Update group for y axis labels group of rect + text
     var yLabels = d3.select("#yLabels");
     // append the rect for move labels
     var yLabelsRect = yLabels.selectAll("rect")
         .data(yAxisLabels);
-    var enterYLabelsRect = yLabelsRect.enter()
-        .append("rect")
-        .merge(yLabelsRect)
-        .attr("x", -45)
-        .attr("y", (d,i) => (i+1)*axisPadding-12)
-        .attr("width", 12)
-        .attr("height", 12)
-        .classed("stateRect", true)
-        .classed("invisible", d => (d === chosenYAxis) ? true:false)
-        .attr("value", d => "y"+d)
-        .on("click", updateLabel);
-    // update tooptip on rect
-    updateLabelsTooltip("y", enterYLabelsRect);
-    // remove old labels rect
+    // update labels rect tags
+    yEnterLabelsRect = updateLabelsRect("y", -45, yLabelsRect);
+    // update tooptip on rect tags
+    updateLabelsTooltip("y", yEnterLabelsRect);
+    // remove old labels rect tags
     yLabelsRect.exit().remove();
     // append the text for the x-axis labels
     var yLabelsText = yLabels.selectAll("text")
         .data(yAxisLabels);
-    // append the text for the y-axis labels
-    yLabelsText.enter()
-        .append("text")
-        .merge(yLabelsText)
-        .attr("x", margin.top)
-        .attr("y", (d,i) => (i+1)*axisPadding)
-        .attr("value", d => d) // value to grab for event listener
-        .classed("active", d => (d === chosenYAxis) ? true:false)
-        .classed("inactive", d => (d === chosenYAxis) ? false:true)
-        .text(d => labelsTitle[d])
-        .on("click", updateChart);
+    // update labels text tag
+    updateLabelsText("y", margin.top, yLabelsText);
     // Remove any excess old data
     yLabelsText.exit().remove();
 }
